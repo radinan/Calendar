@@ -42,7 +42,7 @@ int findDay(int dayOfMonth, int monthNumber, int year)
 		firstTwoDigitsOfYear /= 10;
 	
 	int funcZeller = dayOfMonth + (13 * monthZellerNumber - 1) / 5 + lastTwoDigitsOfYear + (lastTwoDigitsOfYear / 4)
-															   - 2 * firstTwoDigitsOfYear + (firstTwoDigitsOfYear / 4);
+								- 2 * firstTwoDigitsOfYear + (firstTwoDigitsOfYear / 4);
 	int remainder = funcZeller % 7;
 	while (remainder < 0)
 		remainder += 7;
