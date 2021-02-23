@@ -207,7 +207,7 @@ void printCalendar(int year, std::ostream& out)
 
 int main()
 {
-	printCalendar(1970, std::cout);
+	printCalendar(2020, std::cout);
 
 	return 0;
 }
