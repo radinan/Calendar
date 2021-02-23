@@ -3,7 +3,6 @@
 #include <cassert>
 #include <iomanip>
 #include <sstream>
-#include <queue>
 
 //using Zeller's algorithm
 int findDay(int dayOfMonth, int monthNumber, int year)
