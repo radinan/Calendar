@@ -3,9 +3,9 @@
 #include <cassert>
 #include <iomanip>
 #include <sstream>
+#include <vector>
 
-//using Zeller's algorithm
-int findDay(int dayOfMonth, int monthNumber, int year)
+int findDay(int dayOfMonth, int monthNumber, int year) //using Zeller's algorithm
 {
 	//validation
 	assert(monthNumber > 0 && monthNumber < 13);
@@ -41,7 +41,7 @@ int findDay(int dayOfMonth, int monthNumber, int year)
 		firstTwoDigitsOfYear /= 10;
 	
 	int funcZeller = dayOfMonth + (13 * monthZellerNumber - 1) / 5 + lastTwoDigitsOfYear + (lastTwoDigitsOfYear / 4)
-								- 2 * firstTwoDigitsOfYear + (firstTwoDigitsOfYear / 4);
+								   - 2 * firstTwoDigitsOfYear + (firstTwoDigitsOfYear / 4);
 	int remainder = funcZeller % 7;
 	while (remainder < 0)
 		remainder += 7;
@@ -94,39 +94,9 @@ int daysOfMonth(int monthNumber, int year)
 	default: assert(false);
 	}
 }
-std::string operator*(const std::string& lhs, const std::string& rhs)
+std::vector<std::pair<int, std::string>> createCalendar(int year) //28 symbs width -> 14th, 15th - in the middle
 {
-	std::stringstream s1(lhs), s2(rhs);
-	std::string merged, lhs2, rhs2, spaces;
-	for (int i = 0; i < (28 + 3); ++i)//28 spaces + 3 for separation
-		spaces += " ";
-
-	if (lhs.size() > rhs.size())
-	{
-		while (std::getline(s1, lhs2))
-		{
-			if (std::getline(s2, rhs2))
-				merged += lhs2 + "   " + rhs2 + "\n"; //3 spaces for separation
-			else
-				merged += lhs2 + spaces + "\n"; 
-		}
-	}
-	else
-	{
-		while (std::getline(s2, rhs2))
-		{
-			if(std::getline(s1, lhs2))
-				merged += lhs2 + "   " + rhs2 + "\n"; //3 spaces for separation
-			else
-				merged += spaces + rhs2 + "\n";
-		}
-	}
-
-	return merged;
-}
-std::vector<std::string> createCalendar(int year) //28 symbs width -> 14th, 15th - in the middle
-{
-	std::vector<std::string> allMonths;
+	std::vector<std::pair<int, std::string>> allMonths; // int -> num of rows(with days), string -> whole month
 
 	for (int i = 1; i <= 12; ++i)
 	{
@@ -134,29 +104,29 @@ std::vector<std::string> createCalendar(int year) //28 symbs width -> 14th, 15th
 
 		//Name of the month - centrally aligned
 		std::string nameOfMonth = monthName(i);
-		int spacesBeforeName = 0, spacesAfterName = 0, nameLength = nameOfMonth.size(); 
+		int spacesBeforeName = 0, spacesAfterName = 0, nameLength = nameOfMonth.size();
 		if (nameLength % 2 == 0)
 		{
-			spacesBeforeName = 14 - (nameLength - 2) / 2; 
-			spacesAfterName = spacesBeforeName; 
+			spacesBeforeName = 14 - (nameLength - 2) / 2;
+			spacesAfterName = spacesBeforeName;
 		}
 		else
 		{
-			spacesBeforeName = 14 - (nameLength - 1) / 2; 
+			spacesBeforeName = 14 - (nameLength - 1) / 2;
 			spacesAfterName = spacesBeforeName + 1;
 		}
-		for (int j = 1; j < spacesBeforeName; ++j) //1-9 = 9
+		for (int j = 1; j < spacesBeforeName; ++j)
 			s << " ";
-		s << nameOfMonth; 
-		for (int j = 1; j < spacesAfterName; ++j) //10
+		s << nameOfMonth;
+		for (int j = 1; j < spacesAfterName; ++j)
 			s << " ";
 		s << "\n";
 
 		//Names of the weekdays
-		s <<"Sun" << " " << "Mon" << " " << "Tue" << " " << "Wed" << " " << "Thu" << " " << "Fri" << " " << "Sat" << " " << "\n";
+		s << "Sun" << " " << "Mon" << " " << "Tue" << " " << "Wed" << " " << "Thu" << " " << "Fri" << " " << "Sat" << " " << "\n";
 
 		//Days of the month
-		int date = 1, day = findDay(1, i, year), lastDay = daysOfMonth(i, year), counter = 0;
+		int day = findDay(1, i, year), lastDay = daysOfMonth(i, year), counter = 0, daysRows = 1;
 		for (int k = 1; k < day; ++k)
 		{
 			s << "   "; //3 spaces
@@ -167,8 +137,9 @@ std::vector<std::string> createCalendar(int year) //28 symbs width -> 14th, 15th
 		{
 			if (counter == 7)
 			{
-				s << "\n"; 
+				s << "\n";
 				counter = 0;
+				daysRows++;
 			}
 			if (n > 0 && n < 10)
 				s << " " << n << " "; //3 chars
@@ -177,29 +148,86 @@ std::vector<std::string> createCalendar(int year) //28 symbs width -> 14th, 15th
 			s << " ";
 			counter++;
 		}
-		for (int k = counter; k < 7 ; ++k)
+		for (int k = counter; k < 7; ++k)
 		{
-			s << "   "; 
+			s << "   ";
 			s << " ";
 			++counter;
 		}
 		s << "\n";
 
-		allMonths.push_back(s.str());
+		allMonths.push_back(std::make_pair(daysRows, s.str()));
 	}
 
 	return allMonths;
 }
-void printCalendar(int year, std::ostream& out)
+
+std::string nSpaces(int n)
+{
+	std::string spaces;
+	for (int i = 0; i < n; ++i)
+		spaces += " ";
+	return spaces;
+}
+std::pair<int, std::string> merge(const std::pair<int, std::string>& lhs, const std::pair<int, std::string>& rhs)
+{
+	std::stringstream s1(lhs.second), s2(rhs.second);
+	std::pair<int, std::string> merged;
+	std::string lhs2, rhs2, spaces = nSpaces(31); //28 spaces + 3 for separation
+	bool flag = false; //whether lhs contains 2 merged months (both shorter than rhs)
+
+	if (lhs.first > rhs.first)
+	{
+		while (std::getline(s1, lhs2))
+		{
+			if (std::getline(s2, rhs2))
+				merged.second += lhs2 + "   " + rhs2 + "\n"; 
+			else
+				merged.second += lhs2 + spaces + "\n"; 
+		}
+		merged.first = lhs.first;
+	}
+	else if(lhs.first < rhs.first)
+	{
+		while (std::getline(s2, rhs2))
+		{
+			if (std::getline(s1, lhs2))
+			{
+				merged.second += lhs2 + "   " + rhs2 + "\n";
+				if (lhs2.size() > rhs2.size())
+					flag = true;
+			}
+			else
+			{
+				if(flag)
+					merged.second += spaces + spaces + rhs2 + "\n"; //5 rows, 5 rows, 6 rows => needs double spaces
+				else
+					merged.second += spaces + rhs2 + "\n";
+			}
+		}
+		merged.first = rhs.first;
+	}
+	else
+	{
+		while (std::getline(s1, lhs2) && std::getline(s2, rhs2))
+				merged.second += lhs2 + "   " + rhs2 + "\n"; 
+
+		merged.first = lhs.first;
+	}
+
+	return merged;
+}
+
+void printCalendar(int year, std::ostream& out) //3 x 4
 {
 	//89 width
-	std::vector<std::string> vec(createCalendar(year));
+	std::vector<std::pair<int, std::string>> vec(createCalendar(year));
 	out << std::setw(47) << "Year" << "\n";
 	out << std::setw(47) << year << "\n" << "\n";
 
 	for (int i = 0; i < 12; i += 3)
 	{
-		out << vec[i] * vec[i + 1] * vec[i + 2];
+		out << merge(merge(vec[i], vec[i + 1]), vec[i + 2]).second;
 		out << std::endl;
 	}
 }
